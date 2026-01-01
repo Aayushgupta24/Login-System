@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Secure Auth System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔐 Secure Authentication System</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="register.html">Register</a>
+                <a href="login.html">Login</a>
+                <a href="dashboard.html" class="active">Dashboard</a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="card">
+                <h2>Protected Dashboard</h2>
+                <div id="loadingMessage">Loading user data...</div>
+                <div id="userInfo" style="display: none;">
+                    <h3>Welcome, <span id="username"></span>!</h3>
+                    <div class="user-details">
+                        <p><strong>User ID:</strong> <span id="userId"></span></p>
+                        <p><strong>Email:</strong> <span id="userEmail"></span></p>
+                    </div>
+                    <div class="info-box">
+                        <p>✅ You are successfully authenticated!</p>
+                        <p>This is a protected route that requires a valid JWT token.</p>
+                    </div>
+                    <button id="logoutBtn" class="btn btn-danger">Logout</button>
+                </div>
+                <div id="errorMessage" class="error-message"></div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Secure Auth System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔐 Secure Authentication System</h1>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="register.html" class="active">Register</a>
+                <a href="login.html">Login</a>
+                <a href="dashboard.html">Dashboard</a>
+            </nav>
+        </header>
+
+        <main>
+            <div class="card auth-card">
+                <h2>Create an Account</h2>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            required 
+                            minlength="3" 
+                            maxlength="30"
+                            pattern="[a-zA-Z0-9_]+"
+                            title="Username can only contain letters, numbers, and underscores"
+                        >
+                        <small>3-30 characters, letters, numbers, and underscores only</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required 
+                            minlength="8"
+                        >
+                        <small>At least 8 characters with uppercase, lowercase, and number</small>
+                    </div>
+
+                    <div id="errorMessage" class="error-message"></div>
+                    <div id="successMessage" class="success-message"></div>
+
+                    <button type="submit" class="btn btn-primary btn-block">Register</button>
+                </form>
+
+                <p class="text-center">
+                    Already have an account? <a href="login.html">Login here</a>
+                </p>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
+
