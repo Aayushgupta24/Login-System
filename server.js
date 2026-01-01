@@ -82,8 +82,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Only listen if not in Vercel serverless environment
-if (process.env.VERCEL !== '1') {
+// Only listen if not in production (local dev only)
+if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
