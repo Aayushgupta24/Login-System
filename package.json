@@ -8,7 +8,7 @@
     "dev": "nodemon server.js",
     "build": "npm run install:frontend && npm run build:frontend",
     "build:frontend": "cd frontend && npm run build",
-    "install:frontend": "cd frontend && npm install",
+    "install:frontend": "cd frontend && npm install --include=dev",
     "vercel-build": "npm run build"
   },
   "keywords": ["authentication", "jwt", "mongodb", "security"],
