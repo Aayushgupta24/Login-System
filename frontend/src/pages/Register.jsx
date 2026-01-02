@@ -55,12 +55,45 @@ function Register() {
 
   return (
     <div className="container">
-      <main>
+      <main className="fade-in">
         <div className="card auth-card">
-          <h2>Create an Account</h2>
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              margin: '0 auto 20px',
+              borderRadius: '20px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '40px',
+              boxShadow: '0 10px 30px rgba(102, 126, 234, 0.3)',
+            }}>
+              ✨
+            </div>
+            <h2 style={{
+              fontSize: '32px',
+              fontWeight: '700',
+              marginBottom: '8px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>
+              Create an Account
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>
+              Join us and experience secure authentication
+            </p>
+          </div>
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="username">Username</label>
+              <label htmlFor="username">
+                <span style={{ marginRight: '8px' }}>👤</span>
+                Username
+              </label>
               <input
                 type="text"
                 id="username"
@@ -72,9 +105,12 @@ function Register() {
                 maxLength="30"
                 pattern="[a-zA-Z0-9_]+"
                 title="Username can only contain letters, numbers, and underscores"
+                placeholder="Enter your username"
               />
               {validationErrors.username && (
-                <small style={{ color: 'var(--danger-color)' }}>{validationErrors.username}</small>
+                <small style={{ color: 'var(--danger-color)', fontWeight: '600' }}>
+                  {validationErrors.username}
+                </small>
               )}
               {!validationErrors.username && (
                 <small>3-30 characters, letters, numbers, and underscores only</small>
@@ -82,7 +118,10 @@ function Register() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">
+                <span style={{ marginRight: '8px' }}>📧</span>
+                Email
+              </label>
               <input
                 type="email"
                 id="email"
@@ -90,14 +129,20 @@ function Register() {
                 value={formData.email}
                 onChange={handleChange}
                 required
+                placeholder="Enter your email address"
               />
               {validationErrors.email && (
-                <small style={{ color: 'var(--danger-color)' }}>{validationErrors.email}</small>
+                <small style={{ color: 'var(--danger-color)', fontWeight: '600' }}>
+                  {validationErrors.email}
+                </small>
               )}
             </div>
 
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">
+                <span style={{ marginRight: '8px' }}>🔐</span>
+                Password
+              </label>
               <input
                 type="password"
                 id="password"
@@ -106,25 +151,54 @@ function Register() {
                 onChange={handleChange}
                 required
                 minLength="8"
+                placeholder="Create a strong password"
               />
               {validationErrors.password && (
-                <small style={{ color: 'var(--danger-color)' }}>{validationErrors.password}</small>
+                <small style={{ color: 'var(--danger-color)', fontWeight: '600' }}>
+                  {validationErrors.password}
+                </small>
               )}
               {!validationErrors.password && (
                 <small>At least 8 characters with uppercase, lowercase, and number</small>
               )}
             </div>
 
-            {error && <div className="error-message">{error}</div>}
-            {success && <div className="success-message">{success}</div>}
+            {error && <div className="error-message">⚠️ {error}</div>}
+            {success && <div className="success-message">✅ {success}</div>}
 
-            <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-              {loading ? 'Registering...' : 'Register'}
+            <button
+              type="submit"
+              className="btn btn-primary btn-block"
+              disabled={loading}
+              style={{ marginTop: '8px' }}
+            >
+              {loading ? (
+                <span>⏳ Registering...</span>
+              ) : (
+                <span>🚀 Create Account</span>
+              )}
             </button>
           </form>
 
-          <p className="text-center" style={{ marginTop: '20px' }}>
-            Already have an account? <Link to="/login" style={{ color: 'var(--primary-color)', textDecoration: 'none', fontWeight: '500' }}>Login here</Link>
+          <p className="text-center" style={{ marginTop: '24px', color: 'var(--text-secondary)' }}>
+            Already have an account?{' '}
+            <Link
+              to="/login"
+              style={{
+                color: 'var(--primary-color)',
+                textDecoration: 'none',
+                fontWeight: '600',
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.textDecoration = 'underline';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.textDecoration = 'none';
+              }}
+            >
+              Login here
+            </Link>
           </p>
         </div>
       </main>
@@ -133,4 +207,3 @@ function Register() {
 }
 
 export default Register;
-
