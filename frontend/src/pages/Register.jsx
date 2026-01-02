@@ -35,9 +35,9 @@ function Register() {
     const result = await register(formData.username, formData.email, formData.password);
 
     if (result.success) {
-      setSuccess('Registration successful! Redirecting to dashboard...');
+      setSuccess('Registration successful! Redirecting to login page...');
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/login');
       }, 1500);
     } else {
       if (result.errors) {

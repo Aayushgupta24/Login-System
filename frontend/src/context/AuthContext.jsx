@@ -60,7 +60,9 @@ export function AuthProvider({ children }) {
       });
 
       if (response.data.success) {
-        setUser(response.data.data.user);
+        // Don't set user - user needs to login after registration
+        // Backend no longer sets cookie during registration
+        setUser(null);
         return { success: true };
       }
     } catch (error) {

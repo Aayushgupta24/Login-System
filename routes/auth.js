@@ -63,20 +63,12 @@ router.post(
         password, // Will be hashed by pre-save hook
       });
 
-      // Generate token
-      const token = generateToken(user._id);
-
-      // Set cookie with token
-      res.cookie('token', token, {
-        httpOnly: true, // Prevents XSS attacks
-        secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-        sameSite: 'strict', // CSRF protection
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
+      // Don't set cookie during registration - user must login separately
+      // This ensures users explicitly login after registration
 
       res.status(201).json({
         success: true,
-        message: 'User registered successfully',
+        message: 'User registered successfully. Please login to continue.',
         data: {
           user: {
             id: user._id,
