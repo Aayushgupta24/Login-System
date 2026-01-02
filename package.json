@@ -5,7 +5,11 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "build": "npm run install:frontend && npm run build:frontend",
+    "build:frontend": "cd frontend && npm run build",
+    "install:frontend": "cd frontend && npm install",
+    "vercel-build": "npm run build"
   },
   "keywords": ["authentication", "jwt", "mongodb", "security"],
   "author": "",

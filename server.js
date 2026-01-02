@@ -52,15 +52,22 @@ app.use(cors({
   credentials: true,
 }));
 
-// Serve static files from public directory
-app.use(express.static('public'));
-
-// API Routes
+// API Routes (must come before static files)
 app.use('/api/auth', authRoutes);
 app.use('/api/protected', protectedRoutes);
 
-// Root route
-app.get('/', (req, res) => {
+// Serve static files from public directory (React build)
+app.use(express.static('public'));
+
+// Serve React app for all non-API routes (SPA routing)
+app.get('*', (req, res) => {
+  // Don't serve index.html for API routes
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({
+      success: false,
+      message: 'Route not found',
+    });
+  }
   res.sendFile(__dirname + '/public/index.html');
 });
 
