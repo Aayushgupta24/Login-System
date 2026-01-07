@@ -1,8 +1,10 @@
-const express = require('express');
-const { body, validationResult } = require('express-validator');
-const User = require('../models/User');
-const generateToken = require('../utils/generateToken');
-const { authLimiter } = require('../middleware/security');
+import express from "express";
+import { body, validationResult } from "express-validator";
+import jwt from "jsonwebtoken";
+
+import User from "../models/User.js";
+import generateToken from "../utils/generateToken.js";
+import { authLimiter } from "../middleware/security.js";
 
 const router = express.Router();
 
@@ -10,41 +12,44 @@ const router = express.Router();
 // @desc    Register a new user
 // @access  Public
 router.post(
-  '/register',
+  "/register",
   [
-    // Validation middleware
-    body('username')
+    body("username")
       .trim()
       .isLength({ min: 3, max: 30 })
-      .withMessage('Username must be between 3 and 30 characters')
+      .withMessage("Username must be between 3 and 30 characters")
       .matches(/^[a-zA-Z0-9_]+$/)
-      .withMessage('Username can only contain letters, numbers, and underscores'),
-    body('email')
+      .withMessage(
+        "Username can only contain letters, numbers, and underscores"
+      ),
+
+    body("email")
       .trim()
       .isEmail()
       .normalizeEmail()
-      .withMessage('Please provide a valid email address'),
-    body('password')
+      .withMessage("Please provide a valid email address"),
+
+    body("password")
       .isLength({ min: 8 })
-      .withMessage('Password must be at least 8 characters long')
+      .withMessage("Password must be at least 8 characters long")
       .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-      .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+      .withMessage(
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+      ),
   ],
   async (req, res) => {
     try {
-      // Check for validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
+          message: "Validation failed",
           errors: errors.array(),
         });
       }
 
       const { username, email, password } = req.body;
 
-      // Check if user already exists
       const existingUser = await User.findOne({
         $or: [{ email }, { username }],
       });
@@ -52,23 +57,19 @@ router.post(
       if (existingUser) {
         return res.status(400).json({
           success: false,
-          message: 'User with this email or username already exists',
+          message: "User with this email or username already exists",
         });
       }
 
-      // Create new user
       const user = await User.create({
         username,
         email,
-        password, // Will be hashed by pre-save hook
+        password,
       });
-
-      // Don't set cookie during registration - user must login separately
-      // This ensures users explicitly login after registration
 
       res.status(201).json({
         success: true,
-        message: 'User registered successfully. Please login to continue.',
+        message: "User registered successfully. Please login to continue.",
         data: {
           user: {
             id: user._id,
@@ -78,11 +79,14 @@ router.post(
         },
       });
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error during registration',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        message: "Server error during registration",
+        error:
+          process.env.NODE_ENV === "development"
+            ? error.message
+            : undefined,
       });
     }
   }
@@ -92,68 +96,56 @@ router.post(
 // @desc    Login user
 // @access  Public
 router.post(
-  '/login',
-  authLimiter, // Rate limiting for login attempts
+  "/login",
+  authLimiter,
   [
-    // Validation middleware
-    body('login')
-      .trim()
-      .notEmpty()
-      .withMessage('Email or username is required'),
-    body('password')
-      .notEmpty()
-      .withMessage('Password is required'),
+    body("login").trim().notEmpty().withMessage("Email or username is required"),
+    body("password").notEmpty().withMessage("Password is required"),
   ],
   async (req, res) => {
     try {
-      // Check for validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
           success: false,
-          message: 'Validation failed',
+          message: "Validation failed",
           errors: errors.array(),
         });
       }
 
       const { login, password } = req.body;
 
-      // Find user by email or username (with password field)
       const user = await User.findOne({
         $or: [{ email: login.toLowerCase() }, { username: login }],
-      }).select('+password');
+      }).select("+password");
 
       if (!user) {
         return res.status(401).json({
           success: false,
-          message: 'Invalid credentials',
+          message: "Invalid credentials",
         });
       }
 
-      // Check password
       const isPasswordValid = await user.comparePassword(password);
-
       if (!isPasswordValid) {
         return res.status(401).json({
           success: false,
-          message: 'Invalid credentials',
+          message: "Invalid credentials",
         });
       }
 
-      // Generate token
       const token = generateToken(user._id);
 
-      // Set cookie with token
-      res.cookie('token', token, {
-        httpOnly: true, // Prevents XSS attacks
-        secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-        sameSite: 'strict', // CSRF protection
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       res.json({
         success: true,
-        message: 'Login successful',
+        message: "Login successful",
         data: {
           user: {
             id: user._id,
@@ -163,11 +155,14 @@ router.post(
         },
       });
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       res.status(500).json({
         success: false,
-        message: 'Server error during login',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        message: "Server error during login",
+        error:
+          process.env.NODE_ENV === "development"
+            ? error.message
+            : undefined,
       });
     }
   }
@@ -175,42 +170,40 @@ router.post(
 
 // @route   POST /api/auth/logout
 // @desc    Logout user
-// @access  Private
-router.post('/logout', (req, res) => {
-  res.cookie('token', '', {
+router.post("/logout", (req, res) => {
+  res.cookie("token", "", {
     httpOnly: true,
     expires: new Date(0),
   });
 
   res.json({
     success: true,
-    message: 'Logged out successfully',
+    message: "Logged out successfully",
   });
 });
 
 // @route   GET /api/auth/me
 // @desc    Get current user
 // @access  Private
-router.get('/me', async (req, res) => {
+router.get("/me", async (req, res) => {
   try {
     const token = req.cookies.token;
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Not authenticated',
+        message: "Not authenticated",
       });
     }
 
-    const jwt = require('jsonwebtoken');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await User.findById(decoded.id).select('-password');
+    const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'User not found',
+        message: "User not found",
       });
     }
 
@@ -227,10 +220,9 @@ router.get('/me', async (req, res) => {
   } catch (error) {
     res.status(401).json({
       success: false,
-      message: 'Not authenticated',
+      message: "Not authenticated",
     });
   }
 });
 
-module.exports = router;
-
+export default router;

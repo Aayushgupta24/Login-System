@@ -1,11 +1,21 @@
-require('dotenv').config();
-const express = require('express');
-const cookieParser = require('cookie-parser');
-const cors = require('cors');
-const connectDB = require('./config/database');
-const { setupSecurity } = require('./middleware/security');
-const authRoutes = require('./routes/auth');
-const protectedRoutes = require('./routes/protected');
+import dotenv from "dotenv";
+import express from "express";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+
+import connectDB from "./config/database.js";
+import { setupSecurity } from "./middleware/security.js";
+import authRoutes from "./routes/auth.js";
+import protectedRoutes from "./routes/protected.js";
+import mutualFundRoutes from "./routes/mutualFundRoutes.js";
+
+dotenv.config();
+
+// Fix __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Connect to database
 connectDB();
@@ -17,86 +27,88 @@ const PORT = process.env.PORT || 3000;
 setupSecurity(app);
 
 // Body parser middleware
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(express.json({ limit: "10kb" }));
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
 // Cookie parser middleware
 app.use(cookieParser());
 
+// Mutual fund routes
+app.use("/api/mutual-funds", mutualFundRoutes);
+
 // CORS configuration
-const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? [
-      process.env.FRONTEND_URL,
-      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
-      process.env.VERCEL ? `https://${process.env.VERCEL}` : null,
-    ].filter(Boolean)
-  : ['http://localhost:3000'];
+const allowedOrigins =
+  process.env.NODE_ENV === "production"
+    ? [
+        process.env.FRONTEND_URL,
+        process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+        process.env.VERCEL ? `https://${process.env.VERCEL}` : null,
+      ].filter(Boolean)
+    : ["http://localhost:3000", "http://localhost:5173"];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // In development, allow localhost
-    if (process.env.NODE_ENV !== 'production') {
-      return callback(null, true);
-    }
-    
-    // In production, check against allowed origins
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
 
-// API Routes (must come before static files)
-app.use('/api/auth', authRoutes);
-app.use('/api/protected', protectedRoutes);
+      if (process.env.NODE_ENV !== "production") {
+        return callback(null, true);
+      }
 
-// Serve static files from public directory (React build)
-app.use(express.static('public'));
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
-// Serve React app for all non-API routes (SPA routing)
-app.get('*', (req, res) => {
-  // Don't serve index.html for API routes
-  if (req.path.startsWith('/api')) {
+// API routes
+app.use("/api/auth", authRoutes);
+app.use("/api/protected", protectedRoutes);
+
+// Serve static React build
+app.use(express.static(path.join(__dirname, "public")));
+
+// SPA fallback
+app.get("*", (req, res) => {
+  if (req.path.startsWith("/api")) {
     return res.status(404).json({
       success: false,
-      message: 'Route not found',
+      message: "Route not found",
     });
   }
-  res.sendFile(__dirname + '/public/index.html');
+
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route not found',
+    message: "Route not found",
   });
 });
 
-// Error handling middleware
+// Error handler
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
+  console.error("Error:", err);
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    message: err.message || "Internal server error",
+    error: process.env.NODE_ENV === "development" ? err.stack : undefined,
   });
 });
 
-// Only listen if not in production (local dev only)
-if (process.env.NODE_ENV !== 'production') {
+// Local server only (Vercel safe)
+if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
   });
 }
 
-// Export the app for Vercel serverless functions
-module.exports = app;
-
+// Export for Vercel
+export default app;

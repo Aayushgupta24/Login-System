@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 // Cache the connection to reuse in serverless environments
 let cached = global.mongoose;
@@ -8,35 +8,34 @@ if (!cached) {
 }
 
 const connectDB = async () => {
-  // If already connected, return the existing connection
+  // Return existing connection if present
   if (cached.conn) {
     return cached.conn;
   }
 
-  // If connection is in progress, wait for it
+  // Create new connection if none exists
   if (!cached.promise) {
     const opts = {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
-      console.log(`MongoDB Connected: ${mongoose.connection.host}`);
-      return mongoose;
-    });
+    cached.promise = mongoose
+      .connect(process.env.MONGODB_URI, opts)
+      .then((mongooseInstance) => {
+        console.log(`MongoDB Connected: ${mongooseInstance.connection.host}`);
+        return mongooseInstance;
+      });
   }
 
   try {
     cached.conn = await cached.promise;
-  } catch (e) {
+  } catch (error) {
     cached.promise = null;
-    console.error(`Error: ${e.message}`);
-    throw e;
+    console.error("MongoDB connection error:", error.message);
+    throw error;
   }
 
   return cached.conn;
 };
 
-module.exports = connectDB;
-
+export default connectDB;

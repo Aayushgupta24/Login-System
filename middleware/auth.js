@@ -1,47 +1,34 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-// Middleware to protect routes
-const protect = async (req, res, next) => {
+export const protect = async (req, res, next) => {
   try {
-    // Get token from cookies
-    const token = req.cookies.token;
+    const token = req.cookies?.token;
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Not authorized, no token provided',
+        message: "Not authorized, token missing",
       });
     }
 
-    try {
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Get user from token (without password)
-      req.user = await User.findById(decoded.id).select('-password');
+    const user = await User.findById(decoded.id).select("-password");
 
-      if (!req.user) {
-        return res.status(401).json({
-          success: false,
-          message: 'User not found',
-        });
-      }
-
-      next();
-    } catch (error) {
+    if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Not authorized, invalid token',
+        message: "Not authorized, user not found",
       });
     }
+
+    req.user = user;
+    next();
   } catch (error) {
-    res.status(500).json({
+    return res.status(401).json({
       success: false,
-      message: 'Server error during authentication',
+      message: "Not authorized, token invalid",
     });
   }
 };
-
-module.exports = { protect };
-
